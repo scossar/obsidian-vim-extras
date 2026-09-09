@@ -1,9 +1,9 @@
 {
   "id": "vim-extras",
   "name": "Vim Extras",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "minAppVersion": "1.7.2",
-  "description": "Small additions to Obsidian's built-in Vim mode, starting with system clipboard integration.",
+  "description": "System clipboard integration and heading navigation for Obsidian's built-in Vim mode.",
   "author": "Simon Cossar",
   "isDesktopOnly": true
 }
