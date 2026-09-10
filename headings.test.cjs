@@ -1,9 +1,10 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { readFileSync } = require('node:fs');
+const { buildSync } = require('esbuild');
 const { runInThisContext } = require('node:vm');
 const pluginModule = {exports: {}};
-const load = runInThisContext(`(function(require, module) { ${readFileSync(`${__dirname}/main.js`, 'utf8')}\n})`);
+const source = buildSync({ entryPoints: [`${__dirname}/src/headings.ts`], bundle: true, write: false, format: 'cjs' }).outputFiles[0].text;
+const load = runInThisContext(`(function(require, module) { ${source}\n})`);
 load(() => ({Plugin: class {}}), pluginModule);
 const { headingPositions, jumpToHeading } = pluginModule.exports;
 

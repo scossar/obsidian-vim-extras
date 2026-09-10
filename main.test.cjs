@@ -4,7 +4,7 @@ const { readFileSync } = require('node:fs');
 const { runInNewContext } = require('node:vm');
 
 function setup() {
-  const state = { clipboard: 'external', reads: 0, writes: 0, notices: [], tasks: [], microtasks: [], listeners: [] };
+  const state = { clipboard: 'external', reads: 0, writes: 0, notices: [], tasks: [], microtasks: [], listeners: [], cleanups: [], events: {} };
   const register = {
     text: 'internal', linewise: false, blockwise: false,
     toString() { return this.text; },
@@ -19,7 +19,10 @@ function setup() {
   const module = { exports: {} };
   runInNewContext(readFileSync(`${__dirname}/main.js`, 'utf8'), {
     module, document: doc, queueMicrotask: task => state.microtasks.push(task),
-    setTimeout: task => state.tasks.push(task),
+    window: {
+      setTimeout: task => { state.tasks.push(task); return state.tasks.length; },
+      clearTimeout: id => { state.tasks[id - 1] = () => {}; },
+    },
     console: { error() {} },
     require(name) {
       if (name === 'electron') return { clipboard: {
@@ -29,15 +32,18 @@ function setup() {
       assert.equal(name, 'obsidian');
       return { Plugin: class {
         registerEvent() {}
+        register(callback) { state.cleanups.push(callback); }
+        onunload() { state.cleanups.forEach(callback => callback()); }
         registerDomEvent(...args) { state.listeners.push(args); }
       }, Notice: class { constructor(message) { state.notices.push(message); } } };
     },
   });
-  const plugin = new module.exports();
+  const plugin = new module.exports.default();
   plugin.app = { workspace: {
-    activeEditor: { editor: { cm: view } }, on() {}, getLeavesOfType() { return []; },
+    activeEditor: { editor: { cm: view } }, on(name, callback) { state.events[name] = callback; }, getLeavesOfType() { return []; },
   } };
   plugin.onload();
+  plugin.onKeydown = event => state.listeners[0][2](event);
   const event = (key, extra = {}) => ({ key, target: content, defaultPrevented: false,
     preventDefault() { this.defaultPrevented = true; },
     stopImmediatePropagation() { this.stopped = true; }, ...extra });
@@ -134,7 +140,8 @@ test('clipboard write failure preserves the native yank and reports failure', ()
 
 test('each document gets one capturing listener registered for plugin cleanup', () => {
   const { plugin, state, doc } = setup();
-  plugin.attachDocument(doc); plugin.attachDocument({});
+  state.events['window-open'](null, { document: doc });
+  state.events['window-open'](null, { document: {} });
   assert.equal(state.listeners.length, 2);
   assert.equal(state.listeners[0][1], 'keydown');
   assert.equal(state.listeners[0][3], true);

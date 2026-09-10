@@ -1,6 +1,6 @@
 # Vim Extras
 
-Small additions to Obsidian's built-in Vim mode. Desktop only; no dependencies or build step.
+Small additions to Obsidian's built-in Vim mode. Desktop only. Written in TypeScript and bundled into `main.js`; no additional runtime installation is needed.
 
 Enable **Settings → Editor → Vim key bindings**, then enable **Vim Extras** under Community plugins. Keep Vim Motions disabled.
 
@@ -27,4 +27,27 @@ The plugin uses Electron's clipboard API and Obsidian's internal CodeMirror Vim 
 
 ## Development
 
-Edit the JavaScript files directly and reload the plugin. Run `node --test *.test.cjs` from this plugin directory.
+The project follows the [Obsidian sample plugin](https://github.com/obsidianmd/obsidian-sample-plugin) structure and its `AGENTS.md` guidance. Use Node.js 22 or 24 and npm.
+
+```sh
+npm ci
+npm run build
+npm run lint
+npm test
+```
+
+Run `npm run dev` to watch for changes. Reload Vim Extras in Obsidian after building to load the new bundle.
+
+- `src/main.ts`: plugin lifecycle and workspace events.
+- `src/vim-extras.ts`: clipboard handling, document listeners, and Vim mappings.
+- `src/headings.ts`: live-buffer heading parsing and motions.
+- `src/adapter.ts` and `src/types.ts`: typed boundary around Obsidian's private editor adapter.
+- `src/electron.d.ts`: the clipboard API supplied by Obsidian's Electron runtime.
+
+`npm test` builds the plugin and runs the clipboard and heading regression tests. Tests mock Obsidian and Electron; manually verify visual `y`, normal `p`, `[[` / `]]`, counts, and pop-out windows in Obsidian after changes to editor integration.
+
+`main.js` is generated; edit `src/` instead. Do not commit `main.js` or `node_modules/`. To install elsewhere, copy the built `main.js` and `manifest.json` into `<vault>/.obsidian/plugins/vim-extras/`. This plugin does not need `styles.css`.
+
+The GitHub workflows build, lint, and test pushes and pull requests, and prepare a draft release for version tags. Use `npm version patch` (or `minor` / `major`) to update the package, manifest, and compatibility map; release tags use the version without a `v` prefix.
+
+All plugin features run locally. Clipboard text is handled in memory; the plugin makes no network requests.
