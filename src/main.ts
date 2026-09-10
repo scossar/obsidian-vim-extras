@@ -1,9 +1,11 @@
 import { Plugin } from 'obsidian';
+import { normalModeTab } from './tab';
 import { getEditorView } from './adapter';
 import { VimExtrasController } from './vim-extras';
 
 export default class VimExtras extends Plugin {
 	onload(): void {
+		this.registerEditorExtension(normalModeTab);
 		const extras = new VimExtrasController(this);
 		this.register(() => extras.unload());
 		extras.attachDocument(document);

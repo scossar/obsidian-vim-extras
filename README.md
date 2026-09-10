@@ -14,6 +14,10 @@ Enable **Settings → Editor → Vim key bindings**, then enable **Vim Extras** 
 
 This bridges physical key presses; macro playback and custom mappings that invoke `y`/`p` internally are not intercepted. Clipboard shape is remembered in memory by matching text, since the system text clipboard has no Vim register metadata.
 
+## Tab in normal mode
+
+An unassigned `Tab` does not indent text in Vim normal mode. Obsidian hotkeys and Vim mappings assigned to Tab still run. Insert-mode and visual-mode Tab, Shift+Tab, and Tab outside the editor retain their existing behavior.
+
 ## Heading navigation
 
 - `]]` jumps to the next heading; `[[` jumps to the previous heading.
@@ -40,6 +44,7 @@ Run `npm run dev` to watch for changes. Reload Vim Extras in Obsidian after buil
 
 - `src/main.ts`: plugin lifecycle and workspace events.
 - `src/vim-extras.ts`: clipboard handling, document listeners, and Vim mappings.
+- `src/tab.ts`: normal-mode Tab fallback.
 - `src/headings.ts`: live-buffer heading parsing and motions.
 - `src/adapter.ts` and `src/types.ts`: typed boundary around Obsidian's private editor adapter.
 - `src/electron.d.ts`: the clipboard API supplied by Obsidian's Electron runtime.

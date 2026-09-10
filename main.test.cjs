@@ -29,9 +29,12 @@ function setup() {
         readText() { state.reads++; if (state.readError) throw Error('unavailable'); return state.clipboard; },
         writeText(text) { if (state.writeError) throw Error('unavailable'); state.writes++; state.clipboard = text; },
       } };
+      if (name === '@codemirror/state') return { Prec: { high: value => value } };
+      if (name === '@codemirror/view') return { keymap: { of: value => value } };
       assert.equal(name, 'obsidian');
       return { Plugin: class {
         registerEvent() {}
+        registerEditorExtension() {}
         register(callback) { state.cleanups.push(callback); }
         onunload() { state.cleanups.forEach(callback => callback()); }
         registerDomEvent(...args) { state.listeners.push(args); }
