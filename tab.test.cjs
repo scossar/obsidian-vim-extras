@@ -11,7 +11,8 @@ const source = buildSync({
 }).outputFiles[0].text;
 const loaded = { exports: {} };
 runInThisContext(`(function(require, module) { ${source}\n})`)(require, loaded);
-const { normalModeTab } = loaded.exports;
+const { normalModeTab: createNormalModeTab } = loaded.exports;
+const normalModeTab = createNormalModeTab();
 
 function press(vim, modifiers = {}, extensions = [normalModeTab]) {
   let indents = 0;
@@ -57,4 +58,16 @@ test('higher-priority Tab commands still execute', () => {
 
 test('removing the extension restores the original Tab binding', () => {
   assert.equal(press({}, {}, []).indents, 1);
+});
+
+ test('Tab invokes the heading action only in normal mode', () => {
+  let calls = 0;
+  const extension = createNormalModeTab(() => { calls++; });
+  press({}, {}, [extension]);
+  assert.equal(calls, 1);
+  for (const vim of [undefined, { insertMode: true }, { visualMode: true }, { mode: 'replace' }]) {
+    press(vim, {}, [extension]);
+  }
+  press({}, { shiftKey: true }, [extension]);
+  assert.equal(calls, 1);
 });

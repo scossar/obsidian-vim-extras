@@ -16,7 +16,7 @@ This bridges physical key presses; macro playback and custom mappings that invok
 
 ## Tab in normal mode
 
-An unassigned `Tab` does not indent text in Vim normal mode. Obsidian hotkeys and Vim mappings assigned to Tab still run. Insert-mode and visual-mode Tab, Shift+Tab, and Tab outside the editor retain their existing behavior.
+`Tab` toggles the fold of the heading on the cursor line in Vim normal mode. On other lines it does nothing and does not indent. The command **Vim Extras: Toggle heading fold** is also available in the command palette and can be assigned another hotkey. It is available only when the cursor is on an ATX heading in normal mode. Enable **Settings → Editor → Fold heading** for heading folding. Obsidian hotkeys and Vim mappings assigned to Tab still run. Insert-mode and visual-mode Tab, Shift+Tab, and Tab outside the editor retain their existing behavior.
 
 ## Heading navigation
 
@@ -44,7 +44,8 @@ Run `npm run dev` to watch for changes. Reload Vim Extras in Obsidian after buil
 
 - `src/main.ts`: plugin lifecycle and workspace events.
 - `src/vim-extras.ts`: clipboard handling, document listeners, and Vim mappings.
-- `src/tab.ts`: normal-mode Tab fallback.
+- `src/tab.ts`: normal-mode Tab binding.
+- `src/folding.ts`: heading fold command.
 - `src/headings.ts`: live-buffer heading parsing and motions.
 - `src/adapter.ts` and `src/types.ts`: typed boundary around Obsidian's private editor adapter.
 - `src/electron.d.ts`: the clipboard API supplied by Obsidian's Electron runtime.

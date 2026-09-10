@@ -34,6 +34,7 @@ function setup() {
       assert.equal(name, 'obsidian');
       return { Plugin: class {
         registerEvent() {}
+        addCommand(command) { state.command = command; }
         registerEditorExtension() {}
         register(callback) { state.cleanups.push(callback); }
         onunload() { state.cleanups.forEach(callback => callback()); }
@@ -148,4 +149,49 @@ test('each document gets one capturing listener registered for plugin cleanup', 
   assert.equal(state.listeners.length, 2);
   assert.equal(state.listeners[0][1], 'keydown');
   assert.equal(state.listeners[0][3], true);
+});
+
+test('heading fold command checks availability without folding and toggles through Obsidian', () => {
+  const { plugin, state } = setup();
+  const calls = [];
+  const editor = plugin.app.workspace.activeEditor.editor;
+  Object.assign(editor, {
+    getCursor: () => ({ line: 2, ch: 5 }),
+    getValue: () => '# Parent\nbody\n## Child\nchild body',
+    exec: name => calls.push(name),
+  });
+  assert.equal(state.command.id, 'toggle-heading-fold');
+  assert.equal(state.command.editorCheckCallback(true, editor), true);
+  assert.equal(calls.length, 0);
+  assert.equal(state.command.editorCheckCallback(false, editor), true);
+  assert.equal(state.command.editorCheckCallback(false, editor), true);
+  assert.deepEqual(calls, ['toggleFold', 'toggleFold']);
+});
+
+test('heading fold command rejects body lines, fenced headings and frontmatter', () => {
+  for (const [text, line] of [
+    ['# Heading\nbody', 1], ['```\n# Code\n```', 1], ['---\n# YAML\n---', 1],
+    ['> # Quote', 0], ['    # Indented code', 0],
+  ]) {
+    const { plugin, state } = setup();
+    const editor = plugin.app.workspace.activeEditor.editor;
+    Object.assign(editor, {
+      getCursor: () => ({ line, ch: 0 }), getValue: () => text,
+      exec: () => assert.fail('must not fold'),
+    });
+    assert.equal(state.command.editorCheckCallback(false, editor), false);
+  }
+});
+
+test('heading fold command is unavailable outside normal Vim mode', () => {
+  for (const mode of [{ insertMode: true }, { visualMode: true }, { mode: 'replace' }, null]) {
+    const { plugin, state } = setup();
+    const editor = plugin.app.workspace.activeEditor.editor;
+    editor.cm.cm.state.vim = mode;
+    Object.assign(editor, {
+      getCursor: () => ({ line: 0, ch: 0 }), getValue: () => '# Heading\nbody',
+      exec: () => assert.fail('must not fold'),
+    });
+    assert.equal(state.command.editorCheckCallback(false, editor), false);
+  }
 });

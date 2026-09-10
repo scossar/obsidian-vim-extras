@@ -1,11 +1,20 @@
 import { Plugin } from 'obsidian';
 import { normalModeTab } from './tab';
+import { toggleHeadingFold } from './folding';
 import { getEditorView } from './adapter';
 import { VimExtrasController } from './vim-extras';
 
 export default class VimExtras extends Plugin {
 	onload(): void {
-		this.registerEditorExtension(normalModeTab);
+		this.addCommand({
+			id: 'toggle-heading-fold',
+			name: 'Toggle heading fold',
+			editorCheckCallback: (checking, editor) => toggleHeadingFold(editor, checking),
+		});
+		this.registerEditorExtension(normalModeTab(view => {
+			const editor = this.app.workspace.activeEditor?.editor;
+			if (editor && getEditorView(this.app) === view) toggleHeadingFold(editor);
+		}));
 		const extras = new VimExtrasController(this);
 		this.register(() => extras.unload());
 		extras.attachDocument(document);
