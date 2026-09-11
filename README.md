@@ -18,6 +18,12 @@ This bridges physical key presses; macro playback and custom mappings that invok
 
 `Tab` toggles the fold of the heading on the cursor line in Vim normal mode. On other lines it does nothing and does not indent. The command **Vim Extras: Toggle heading fold** is also available in the command palette and can be assigned another hotkey. It is available only when the cursor is on an ATX heading in normal mode. Enable **Settings → Editor → Fold heading** for heading folding. Obsidian hotkeys and Vim mappings assigned to Tab still run. Insert-mode and visual-mode Tab, Shift+Tab, and Tab outside the editor retain their existing behavior.
 
+## Pane navigation
+
+The commands **Vim Extras: Focus pane left/down/up/right** use Obsidian's native directional tab-group navigation. They focus the neighboring pane without moving tabs, and do nothing at the edge of the layout. They work in all editor modes and reading views.
+
+In this vault, these commands are assigned `Ctrl+h`, `Ctrl+j`, `Ctrl+k`, and `Ctrl+l`, respectively, and Search & replace in current file is unbound. Hotkeys are configured under **Settings → Hotkeys**; other installations can assign their preferred keys there.
+
 ## Heading navigation
 
 - `]]` jumps to the next heading; `[[` jumps to the previous heading.
@@ -45,6 +51,7 @@ Run `npm run dev` to watch for changes. Reload Vim Extras in Obsidian after buil
 - `src/main.ts`: plugin lifecycle and workspace events.
 - `src/vim-extras.ts`: clipboard handling, document listeners, and Vim mappings.
 - `src/tab.ts`: normal-mode Tab binding.
+- `src/panes.ts`: directional pane-focus commands using Obsidian's internal command registry.
 - `src/folding.ts`: heading fold command.
 - `src/headings.ts`: live-buffer heading parsing and motions.
 - `src/adapter.ts` and `src/types.ts`: typed boundary around Obsidian's private editor adapter.

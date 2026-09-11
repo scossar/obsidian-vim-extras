@@ -3,9 +3,11 @@ import { normalModeTab } from './tab';
 import { toggleHeadingFold } from './folding';
 import { getEditorView } from './adapter';
 import { VimExtrasController } from './vim-extras';
+import { registerPaneCommands } from './panes';
 
 export default class VimExtras extends Plugin {
 	onload(): void {
+		registerPaneCommands(this);
 		this.addCommand({
 			id: 'toggle-heading-fold',
 			name: 'Toggle heading fold',
