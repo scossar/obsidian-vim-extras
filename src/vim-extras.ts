@@ -3,6 +3,7 @@ import { clipboard } from 'electron';
 import { jumpToHeading } from './headings';
 import { getEditorView, getVimApi } from './adapter';
 import type { VimApi, Yank } from './types';
+import { cyclePaneTab } from './panes';
 
 export class VimExtrasController {
 	private enabled = true;
@@ -39,7 +40,7 @@ export class VimExtrasController {
 
 	onKeydown(event: KeyboardEvent): void {
 		if (event.defaultPrevented || event.isComposing || event.ctrlKey ||
-				event.metaKey || event.altKey || !['y', 'p'].includes(event.key)) return;
+				event.metaKey || event.altKey || !['y', 'p', 'H', 'J', 'K', 'L'].includes(event.key)) return;
 
 		const editorView = getEditorView(this.plugin.app);
 		if (!editorView?.contentDOM?.contains(event.target as Node | null)) return;
@@ -53,6 +54,16 @@ export class VimExtrasController {
 		// Respect explicit registers and pending commands (find, replace, named paste).
 		const pendingKeys = (input?.keyBuffer || []).join('');
 		if (input?.registerName || input?.operator || /[^0-9]/.test(pendingKeys)) return;
+
+		if (['H', 'J', 'K', 'L'].includes(event.key)) {
+			if (vim.visualMode || pendingKeys) return;
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			if (event.key === 'H' || event.key === 'L') {
+				cyclePaneTab(this.plugin.app, event.key === 'L');
+			}
+			return;
+		}
 
 		const register = api.getRegisterController().getRegister();
 		if (event.key === 'y' && vim.visualMode) {

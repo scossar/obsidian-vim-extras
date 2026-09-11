@@ -20,6 +20,8 @@ This bridges physical key presses; macro playback and custom mappings that invok
 
 ## Pane navigation
 
+In Vim normal mode, `Shift+h` selects the previous tab and `Shift+l` selects the next tab within the current pane, wrapping at either end. `Shift+j` and `Shift+k` do nothing. These physical key bindings replace Vim's ordinary H/J/K/L actions for standalone key presses; insert/replace mode, visual selections, and pending Vim commands (including counts) retain their existing behavior.
+
 The commands **Vim Extras: Focus pane left/down/up/right** use Obsidian's native directional tab-group navigation. They focus the neighboring pane without moving tabs, and do nothing at the edge of the layout. They work in all editor modes and reading views.
 
 In this vault, these commands are assigned `Ctrl+h`, `Ctrl+j`, `Ctrl+k`, and `Ctrl+l`, respectively, and Search & replace in current file is unbound. Hotkeys are configured under **Settings → Hotkeys**; other installations can assign their preferred keys there.

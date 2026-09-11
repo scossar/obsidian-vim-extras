@@ -22,3 +22,9 @@ export function registerPaneCommands(plugin: Plugin): void {
 		});
 	}
 }
+
+export function cyclePaneTab(app: App, forward: boolean): void {
+	(app as AppWithCommands).commands?.executeCommandById(
+		`workspace:${forward ? 'next' : 'previous'}-tab`,
+	);
+}

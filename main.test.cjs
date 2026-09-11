@@ -195,3 +195,45 @@ test('heading fold command is unavailable outside normal Vim mode', () => {
     assert.equal(state.command.editorCheckCallback(false, editor), false);
   }
 });
+
+test('normal H/L cycle pane tabs and J/K are consumed without editing', () => {
+  for (const key of ['H', 'J', 'K', 'L']) {
+    const x = setup();
+    const commands = [];
+    x.plugin.app.commands = { executeCommandById: id => commands.push(id) };
+    const e = x.event(key, { shiftKey: true });
+    x.plugin.onKeydown(e);
+    assert.equal(e.defaultPrevented, true);
+    assert.equal(e.stopped, true);
+    assert.deepEqual(commands, key === 'H' ? ['workspace:previous-tab'] :
+      key === 'L' ? ['workspace:next-tab'] : []);
+    assert.equal(x.state.reads, 0);
+  }
+});
+
+test('shift navigation preserves typing, selections, pending commands and other controls', () => {
+  for (const key of ['H', 'J', 'K', 'L']) {
+    for (const configure of [
+      x => { x.vim.insertMode = true; },
+      x => { x.vim.visualMode = true; },
+      x => { x.vim.mode = 'replace'; },
+      x => { x.vim.expectLiteralNext = true; },
+      x => { x.vim.inputState.keyBuffer = ['f']; },
+      x => { x.vim.inputState.keyBuffer = ['2']; },
+      x => { x.vim.inputState.operator = 'delete'; },
+      x => { x.vim.inputState.registerName = 'a'; },
+      (x, e) => { e.target = {}; },
+      (x, e) => { e.ctrlKey = true; },
+      (x, e) => { e.altKey = true; },
+      (x, e) => { e.metaKey = true; },
+      (x, e) => { e.isComposing = true; },
+    ]) {
+      const x = setup();
+      x.plugin.app.commands = { executeCommandById: () => assert.fail('must not switch tabs') };
+      const e = x.event(key, { shiftKey: true });
+      configure(x, e);
+      x.plugin.onKeydown(e);
+      assert.equal(e.defaultPrevented, false);
+    }
+  }
+});
